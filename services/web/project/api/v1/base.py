@@ -95,7 +95,7 @@ class BaseAPI:
                     raise ValidationException(e)
 
                 for key, value in data.dict().items():
-                    if value is not None:
+                    if hasattr(model, key) and value is not None:
                         setattr(model, key, value)
                 return jsonify(message=f'{entity.__tablename__} was updated')
         except exc.SQLAlchemyError:
