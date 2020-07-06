@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  web:
+    container_name: web
+    build: ./services/web
+    command: python manage.py run -h 0.0.0.0
+    volumes:
+      - ./services/web/:/usr/src/app/
+    ports:
+      - 5000:5000
+      - 5555:5555
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+      - broker
+  db:
+    container_name: db
+    image: postgres:12-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./services/web/database:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=db_user
+      - POSTGRES_PASSWORD=db_password
+      - POSTGRES_MULTIPLE_DATABASES=db_dev,db_test
+  broker:
+    container_name: broker
+    image: rabbitmq:3.7.14-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit-user
+      - RABBITMQ_DEFAULT_PASS=rabbit-password
+  docs:
+    container_name: docs
+    image: swaggerapi/swagger-ui:3.28.0
+    build: ./services/docs
+    ports:
+      - 8000:8080
+volumes:
+  postgres_data:
