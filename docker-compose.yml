@@ -4,7 +4,7 @@ services:
   web:
     container_name: web
     build: ./services/web
-    command: python manage.py run -h 0.0.0.0
+    command: python manage.py run -h 0.0.0.0 -p 5000
     volumes:
       - ./services/web/:/usr/src/app/
     ports:
@@ -15,6 +15,19 @@ services:
     depends_on:
       - db
       - broker
+
+  web-worker:
+    container_name: web-worker
+    build: ./services/web
+    command: celery -A project.tasks.mail_tasks worker -l info
+    volumes:
+      - ./services/web/:/usr/src/app/
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+      - broker
+
   db:
     container_name: db
     image: postgres:12-alpine
